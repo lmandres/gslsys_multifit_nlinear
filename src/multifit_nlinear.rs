@@ -15,11 +15,12 @@ extern "C" {
 }
 
 pub unsafe fn gsl_multifit_nlinear_basic(
-    params: Vec<f64>,
+    params_in: Vec<f64>,
     ts: Vec<f64>,
     ys: Vec<f64>,
     func_f: fn(Vec<f64>, f64, Vec<f64>) -> f64,
-    args: Vec<f64>
+    args: Vec<f64>,
+    max_iters: u64
 ) {
 
     if ts.len() != ys.len() {
@@ -27,9 +28,11 @@ pub unsafe fn gsl_multifit_nlinear_basic(
         return;
     }
 
+    let mut params = params_in.clone();
+
     unsafe {
         run_gsl_multifit_nlinear(
-            params.as_ptr(),
+            params.as_mut_ptr(),
             params.len(),
             ts.as_ptr(),
             ys.as_ptr(),
@@ -37,7 +40,9 @@ pub unsafe fn gsl_multifit_nlinear_basic(
             func_f,
             args.as_ptr(),
             args.len(),
-            100
+            max_iters
         );
     }
+
+    println!("{:?}", params);
 }

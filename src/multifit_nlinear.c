@@ -131,6 +131,10 @@ void run_gsl_multifit_nlinear(
     /* compute final cost */
     gsl_blas_ddot(f, f, &chisq);
 
+    for (int i = 0; i < params_len; i++) {
+        params[i] = gsl_vector_get(w->x, i);
+    }
+
     gsl_multifit_nlinear_free (w);
     gsl_matrix_free (covar);
 }

@@ -38,6 +38,6 @@ fn main() {
     }
 
     unsafe {
-        multifit_nlinear::gsl_multifit_nlinear_basic(params, ts, ys, expb_f, args);
+        multifit_nlinear::gsl_multifit_nlinear_basic(params, ts, ys, expb_f, args, 100);
     }
 }
