@@ -21,11 +21,11 @@ pub unsafe fn gsl_multifit_nlinear_basic(
     func_f: fn(Vec<f64>, f64, Vec<f64>) -> f64,
     args: Vec<f64>,
     max_iters: u64
-) {
+) -> Vec<f64> {
 
     if ts.len() != ys.len() {
         eprintln!("Time length does not match Ys length!");
-        return;
+        return vec![];
     }
 
     let mut params = params_in.clone();
@@ -44,5 +44,5 @@ pub unsafe fn gsl_multifit_nlinear_basic(
         );
     }
 
-    println!("{:?}", params);
+    params
 }

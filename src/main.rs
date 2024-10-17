@@ -15,14 +15,10 @@ fn expb_f(params: Vec<f64>, t: f64, _args: Vec<f64>) -> f64 {
 
 fn main() {
 
-    let mut params = Vec::new();
+    let params = vec![1.0, 1.0, 0.0]; 
     let mut ts = Vec::new();
     let mut ys = Vec::new();
-    let args = Vec::new();
-
-    params.push(1.0);
-    params.push(1.0);
-    params.push(0.0);
+    let args = vec![];
 
     for i in 0..100 {
 
@@ -37,7 +33,9 @@ fn main() {
         ys.push(yi + dy);
     }
 
-    unsafe {
-        multifit_nlinear::gsl_multifit_nlinear_basic(params, ts, ys, expb_f, args, 100);
-    }
+    let params =unsafe {
+        multifit_nlinear::gsl_multifit_nlinear_basic(params, ts, ys, expb_f, args, 100)
+    };
+
+    println!("{:?}", params);
 }
