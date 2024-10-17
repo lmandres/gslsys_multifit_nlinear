@@ -89,6 +89,34 @@ callback(const size_t iter, void *params,
 
 void run_gsl_multifit_nlinear(
     opt_function func_f,
+    double* params,
+    double* covars,
+    size_t params_len,
+    double* ts,
+    double* ys,
+    size_t vars_len,
+    double* args,
+    size_t args_len,
+    size_t max_iters
+) {
+    run_gsl_multifit_nlinear_df(
+        func_f,
+        NULL,
+        params,
+        covars,
+        params_len,
+        ts,
+        ys,
+        vars_len,
+        args,
+        args_len,
+        max_iters
+    );
+}
+
+
+void run_gsl_multifit_nlinear_df(
+    opt_function func_f,
     opt_function* func_dfs,
     double* params,
     double* covars,
@@ -125,12 +153,17 @@ void run_gsl_multifit_nlinear(
     double chisq, chisq0;
     int status, info;
 
+    double* call_dfs_ptr = NULL;
+    if (func_dfs != NULL) {
+        call_dfs_ptr = call_dfs;
+    }
+
     const double xtol = 1e-8;
     const double gtol = 1e-8;
     const double ftol = 1e-8;
 
     fdf.f = call_f;
-    fdf.df = call_dfs;
+    fdf.df = call_dfs_ptr;
     fdf.fvv = NULL;
     fdf.n = vars_len;
     fdf.p = params_len;

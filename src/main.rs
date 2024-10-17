@@ -53,7 +53,7 @@ fn main() {
     }
 
     let (params, covars) = unsafe {
-        multifit_nlinear::gsl_multifit_nlinear_basic_dfs(expb_f, &expb_dfs, params, ts, ys, args, 100)
+        multifit_nlinear::gsl_multifit_nlinear_basic_df(expb_f, &expb_dfs, params, ts, ys, args, 100)
     };
 
     println!("{:?}", params);

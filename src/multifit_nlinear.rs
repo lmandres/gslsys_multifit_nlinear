@@ -3,6 +3,23 @@
 extern "C" {
     fn run_gsl_multifit_nlinear(
         func_f: fn(Vec<f64>, f64, Vec<f64>) -> f64,
+        params: *const f64,
+        covars: *const f64,
+        params_len: usize,
+        ts: *const f64,
+        ys: *const f64,
+        vars_len: usize,
+        args: *const f64,
+        args_len: usize,
+        max_iters: u64
+    );
+}
+
+#[allow(improper_ctypes)]
+#[link(name = "gslmfnlin")]
+extern "C" {
+    fn run_gsl_multifit_nlinear_df(
+        func_f: fn(Vec<f64>, f64, Vec<f64>) -> f64,
         func_dfs: &Vec<fn(Vec<f64>, f64, Vec<f64>) -> f64>,
         params: *const f64,
         covars: *const f64,
@@ -38,7 +55,6 @@ pub unsafe fn gsl_multifit_nlinear_basic(
     unsafe {
         run_gsl_multifit_nlinear(
             func_f,
-            &Vec::new(),
             params.as_mut_ptr(),
             covars.as_mut_ptr(),
             params.len(),
@@ -54,7 +70,7 @@ pub unsafe fn gsl_multifit_nlinear_basic(
     (params, covars)
 }
 
-pub unsafe fn gsl_multifit_nlinear_basic_dfs(
+pub unsafe fn gsl_multifit_nlinear_basic_df(
     func_f: fn(Vec<f64>, f64, Vec<f64>) -> f64,
     func_dfs: &Vec<fn(Vec<f64>, f64, Vec<f64>) -> f64>,
     params_in: Vec<f64>,
@@ -75,7 +91,7 @@ pub unsafe fn gsl_multifit_nlinear_basic_dfs(
     covars.resize(params_in.len(), 0.0);
 
     unsafe {
-        run_gsl_multifit_nlinear(
+        run_gsl_multifit_nlinear_df(
             func_f,
             func_dfs,
             params.as_mut_ptr(),
