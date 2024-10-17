@@ -1,10 +1,12 @@
+use std::mem::transmute;
+
 use gsl_sys::gsl_matrix;
 use gsl_sys::gsl_vector;
 use gsl_sys::gsl_vector_get;
 
 
 #[no_mangle]
-pub unsafe fn rust_callback(
+pub unsafe fn rust_callback_f(
     func_f: fn(Vec<f64>, f64, Vec<f64>) -> f64,
     params: *const gsl_vector,
     params_len: usize,
@@ -23,4 +25,29 @@ pub unsafe fn rust_callback(
     }
 
     func_f(params_vector, t, args_vector)
+}
+
+#[no_mangle]
+pub unsafe fn rust_callback_dfs(
+    params: *const gsl_vector,
+    params_len: usize,
+    func_i: usize,
+    t: f64,
+    args: *const f64,
+    args_len: usize,
+    func_dfs: &Vec<fn(Vec<f64>, f64, Vec<f64>) -> f64>
+) -> f64 {
+
+    let mut params_vector = Vec::new();
+    let func_df = func_dfs.get(func_i).unwrap();
+    
+    let args_vector = Vec::new();
+
+    for i in 0..params_len {
+        unsafe {
+            params_vector.push(gsl_vector_get(params, i));
+        }
+    }
+
+    func_df(params_vector, t, args_vector)
 }

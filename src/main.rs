@@ -13,12 +13,31 @@ fn expb_f(params: Vec<f64>, t: f64, _args: Vec<f64>) -> f64 {
     a * f64::exp(-lambda * t) + b
 }
 
+#[no_mangle]
+fn expb_df_a(params: Vec<f64>, t: f64, _args: Vec<f64>) -> f64 {
+    let lambda = params.get(1).unwrap();
+    f64::exp(-lambda * t)
+}
+
+#[no_mangle]
+fn expb_df_lambda(params: Vec<f64>, t: f64, _args: Vec<f64>) -> f64 {
+    let a = params.get(0).unwrap();
+    let lambda = params.get(1).unwrap();
+    -t * a * f64::exp(-lambda * t)
+}
+
+#[no_mangle]
+fn expb_df_b(_params: Vec<f64>, _t: f64, _args: Vec<f64>) -> f64 {
+    1.0 
+}
+
 fn main() {
 
     let params = vec![1.0, 1.0, 0.0]; 
     let mut ts = Vec::new();
     let mut ys = Vec::new();
     let args = vec![];
+    let expb_dfs = vec![expb_df_a, expb_df_lambda, expb_df_b];
 
     for i in 0..100 {
 
@@ -34,7 +53,7 @@ fn main() {
     }
 
     let (params, covars) = unsafe {
-        multifit_nlinear::gsl_multifit_nlinear_basic(params, ts, ys, expb_f, args, 100)
+        multifit_nlinear::gsl_multifit_nlinear_basic_dfs(expb_f, &expb_dfs, params, ts, ys, args, 100)
     };
 
     println!("{:?}", params);

@@ -7,14 +7,16 @@
 
 typedef double (*opt_function)(void*, double, void*);
 
-extern double rust_callback(opt_function, const gsl_vector*, size_t, double, double*, size_t);
+extern double rust_callback_f(opt_function, const gsl_vector*, size_t, double, double*, size_t);
+extern double rust_callback_dfs(const gsl_vector*, size_t, size_t, double, double*, size_t, opt_function*);
 
 struct data {
+  opt_function func_f;
+  opt_function* func_dfs;
   size_t params_len;
-  size_t vars_len;
   double* ts;
   double* ys;
-  opt_function func_f;
+  size_t vars_len;
   double* args;
   size_t args_len;
 };
@@ -24,22 +26,42 @@ call_f (const gsl_vector * x, void *data,
         gsl_vector * f)
 {
   size_t params_len = ((struct data *)data)->params_len;
-  size_t n = ((struct data *)data)->vars_len;
   double *t = ((struct data *)data)->ts;
   double *y = ((struct data *)data)->ys;
+  size_t n = ((struct data *)data)->vars_len;
 
   opt_function func_f = ((struct data *)data)->func_f;
   double *args = ((struct data *)data)->args;
   size_t args_len = ((struct data *)data)->args_len;
 
-  size_t i;
-
-  for (i = 0; i < n; i++)
+  for (size_t i = 0; i < n; i++)
     {
       /* Model Yi = A * exp(-lambda * t_i) + b */
-      double Yi = rust_callback(func_f, x, params_len, t[i], args, args_len); 
+      double Yi = rust_callback_f(func_f, x, params_len, t[i], args, args_len); 
       gsl_vector_set (f, i, Yi - y[i]);
     }
+
+  return GSL_SUCCESS;
+}
+
+int
+call_dfs (const gsl_vector * x, void *data,
+        gsl_matrix * jacobian)
+{
+  size_t params_len = ((struct data *)data)->params_len;
+  double *t = ((struct data *)data)->ts;
+  double *y = ((struct data *)data)->ys;
+  size_t n = ((struct data *)data)->vars_len;
+
+  double *args = ((struct data *)data)->args;
+  size_t args_len = ((struct data *)data)->args_len;
+  opt_function* func_dfs = ((struct data *)data)->func_dfs;
+
+  for (size_t i = 0; i < n; i++) {
+      for (size_t j = 0; j < params_len; j++) {
+          gsl_matrix_set (jacobian, i, j, rust_callback_dfs(x, params_len, j, t[i], args, args_len, func_dfs));
+      }
+  }
 
   return GSL_SUCCESS;
 }
@@ -66,13 +88,14 @@ callback(const size_t iter, void *params,
 }
 
 void run_gsl_multifit_nlinear(
+    opt_function func_f,
+    opt_function* func_dfs,
     double* params,
     double* covars,
     size_t params_len,
     double* ts,
     double* ys,
     size_t vars_len,
-    void* func_f,
     double* args,
     size_t args_len,
     size_t max_iters
@@ -88,11 +111,12 @@ void run_gsl_multifit_nlinear(
     gsl_matrix *covar = gsl_matrix_alloc (params_len, params_len);
   
     struct data d = {
+       func_f,
+       func_dfs,
        params_len,
-       vars_len,
        ts,
        ys,
-       func_f,
+       vars_len,
        args,
        args_len
     };
@@ -106,7 +130,7 @@ void run_gsl_multifit_nlinear(
     const double ftol = 1e-8;
 
     fdf.f = call_f;
-    fdf.df = NULL;
+    fdf.df = call_dfs;
     fdf.fvv = NULL;
     fdf.n = vars_len;
     fdf.p = params_len;
@@ -132,7 +156,7 @@ void run_gsl_multifit_nlinear(
     /* compute final cost */
     gsl_blas_ddot(f, f, &chisq);
 
-    for (int i = 0; i < params_len; i++) {
+    for (size_t i = 0; i < params_len; i++) {
         params[i] = gsl_vector_get(w->x, i);
         covars[i] = gsl_matrix_get(covar, i, i);
     }
