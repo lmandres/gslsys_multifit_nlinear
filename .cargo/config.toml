@@ -1,0 +1,2 @@
+[build]
+rustflags = ["-lgsl", "-lgslcblas", "-lgslsyslib"] 
