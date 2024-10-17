@@ -1,3 +1,4 @@
+#[allow(improper_ctypes)]
 #[link(name = "gslmfnlin")]
 extern "C" {
     fn run_gsl_multifit_nlinear(
@@ -13,7 +14,7 @@ extern "C" {
     );
 }
 
-pub fn gsl_multifit_nlinear_basic(
+pub unsafe fn gsl_multifit_nlinear_basic(
     params: Vec<f64>,
     ts: Vec<f64>,
     ys: Vec<f64>,
@@ -39,5 +40,4 @@ pub fn gsl_multifit_nlinear_basic(
             100
         );
     }
-
 }

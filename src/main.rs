@@ -4,7 +4,7 @@ use rand::random;
 
 
 #[no_mangle]
-fn expb_f(params: Vec<f64>, t: f64, args: Vec<f64>) -> f64 {
+fn expb_f(params: Vec<f64>, t: f64, _args: Vec<f64>) -> f64 {
 
     let a = params.get(0).unwrap();
     let lambda = params.get(1).unwrap();
@@ -37,5 +37,7 @@ fn main() {
         ys.push(yi + dy);
     }
 
-    multifit_nlinear::gsl_multifit_nlinear_basic(params, ts, ys, expb_f, args);
+    unsafe {
+        multifit_nlinear::gsl_multifit_nlinear_basic(params, ts, ys, expb_f, args);
+    }
 }
