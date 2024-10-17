@@ -67,6 +67,7 @@ callback(const size_t iter, void *params,
 
 void run_gsl_multifit_nlinear(
     double* params,
+    double* covars,
     size_t params_len,
     double* ts,
     double* ys,
@@ -133,6 +134,7 @@ void run_gsl_multifit_nlinear(
 
     for (int i = 0; i < params_len; i++) {
         params[i] = gsl_vector_get(w->x, i);
+        covars[i] = gsl_matrix_get(covar, i, i);
     }
 
     gsl_multifit_nlinear_free (w);

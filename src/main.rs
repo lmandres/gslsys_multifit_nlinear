@@ -33,9 +33,10 @@ fn main() {
         ys.push(yi + dy);
     }
 
-    let params =unsafe {
+    let (params, covars) = unsafe {
         multifit_nlinear::gsl_multifit_nlinear_basic(params, ts, ys, expb_f, args, 100)
     };
 
     println!("{:?}", params);
+    println!("{:?}", covars);
 }
