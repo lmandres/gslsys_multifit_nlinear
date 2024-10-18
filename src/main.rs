@@ -1,4 +1,4 @@
-mod multifit_nlinear; 
+use rgsl_nlinear::multifit_nlinear; 
 
 use rand::random;
 

@@ -7,8 +7,8 @@
 
 typedef double (*opt_function)(void*, double, void*);
 
-extern double rust_callback_f(opt_function, const gsl_vector*, size_t, double, double*, size_t);
-extern double rust_callback_dfs(opt_function*, const gsl_vector*, size_t, size_t, double, double*, size_t);
+extern double rust_callback_f(opt_function, const gsl_vector*, size_t, double, const gsl_vector*, size_t);
+extern double rust_callback_dfs(opt_function*, const gsl_vector*, size_t, size_t, double, const gsl_vector*, size_t);
 
 struct data {
   opt_function func_f;
@@ -31,13 +31,15 @@ call_f (const gsl_vector * x, void *data,
   size_t n = ((struct data *)data)->vars_len;
 
   opt_function func_f = ((struct data *)data)->func_f;
+
   double *args = ((struct data *)data)->args;
   size_t args_len = ((struct data *)data)->args_len;
+  gsl_vector_view args_vec = gsl_vector_view_array(args, args_len);
 
   for (size_t i = 0; i < n; i++)
     {
       /* Model Yi = A * exp(-lambda * t_i) + b */
-      double Yi = rust_callback_f(func_f, x, params_len, t[i], args, args_len); 
+      double Yi = rust_callback_f(func_f, x, params_len, t[i], &args_vec.vector, args_len); 
       gsl_vector_set (f, i, Yi - y[i]);
     }
 
@@ -52,13 +54,15 @@ call_dfs (const gsl_vector * x, void *data,
   double *t = ((struct data *)data)->ts;
   size_t n = ((struct data *)data)->vars_len;
 
+  opt_function* func_dfs = ((struct data *)data)->func_dfs;
+
   double *args = ((struct data *)data)->args;
   size_t args_len = ((struct data *)data)->args_len;
-  opt_function* func_dfs = ((struct data *)data)->func_dfs;
+  gsl_vector_view args_vec = gsl_vector_view_array(args, args_len);
 
   for (size_t i = 0; i < n; i++) {
       for (size_t j = 0; j < params_len; j++) {
-          gsl_matrix_set (jacobian, i, j, rust_callback_dfs(func_dfs, x, params_len, j, t[i], args, args_len));
+          gsl_matrix_set (jacobian, i, j, rust_callback_dfs(func_dfs, x, params_len, j, t[i], &args_vec.vector, args_len));
       }
   }
 

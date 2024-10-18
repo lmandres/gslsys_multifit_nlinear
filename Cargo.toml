@@ -10,3 +10,7 @@ cc = "1.0"
 GSL-sys = "3.0.0"
 rand = "0.8.5"
 gslsyslib = { version = "0.1.0", path = "gslsyslib" }
+
+[lib]
+name = "rgsl_nlinear"
+crate-type = ["dylib", "rlib"]

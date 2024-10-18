@@ -8,16 +8,22 @@ pub unsafe fn rust_callback_f(
     params: *const gsl_vector,
     params_len: usize,
     t: f64,
-    args: *mut f64,
+    args: *const gsl_vector,
     args_len: usize
 ) -> f64 {
 
     let mut params_vector = Vec::new();
-    let args_vector = unsafe { Vec::from_raw_parts(args, args_len, args_len) };
+    let mut args_vector = Vec::new();
 
     for i in 0..params_len {
         unsafe {
             params_vector.push(gsl_vector_get(params, i));
+        }
+    }
+
+    for i in 0..args_len {
+        unsafe {
+            args_vector.push(gsl_vector_get(args, i));
         }
     }
 
@@ -31,17 +37,23 @@ pub unsafe fn rust_callback_dfs(
     params_len: usize,
     func_i: usize,
     t: f64,
-    args: *mut f64,
+    args: *const gsl_vector,
     args_len: usize
 ) -> f64 {
 
     let mut params_vector = Vec::new();
+    let mut args_vector = Vec::new();
     let func_df = func_dfs.get(func_i).unwrap();
-    let args_vector = unsafe { Vec::from_raw_parts(args, args_len, args_len) };
 
     for i in 0..params_len {
         unsafe {
             params_vector.push(gsl_vector_get(params, i));
+        }
+    }
+
+    for i in 0..args_len {
+        unsafe {
+            args_vector.push(gsl_vector_get(args, i));
         }
     }
 
