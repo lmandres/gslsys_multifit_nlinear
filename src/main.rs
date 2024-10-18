@@ -33,7 +33,7 @@ fn expb_df_b(_params: Vec<f64>, _t: f64, _args: Vec<f64>) -> f64 {
 
 fn main() {
 
-    let params = vec![1.0, 1.0, 0.0]; 
+    let params_out = vec![1.0, 1.0, 0.0]; 
     let mut ts = Vec::new();
     let mut ys = Vec::new();
     let args = vec![];
@@ -52,8 +52,16 @@ fn main() {
         ys.push(yi + dy);
     }
 
+
     let (params, covars) = unsafe {
-        multifit_nlinear::gsl_multifit_nlinear_basic_df(expb_f, &expb_dfs, params, ts, ys, args, 100)
+        multifit_nlinear::gsl_multifit_nlinear_basic(expb_f, params_out.clone(), ts.clone(), ys.clone(), args.clone(), 100)
+    };
+
+    println!("{:?}", params);
+    println!("{:?}", covars);
+
+    let (params, covars) = unsafe {
+        multifit_nlinear::gsl_multifit_nlinear_basic_df(expb_f, &expb_dfs, params_out.clone(), ts.clone(), ys.clone(), args.clone(), 100)
     };
 
     println!("{:?}", params);

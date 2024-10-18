@@ -8,7 +8,7 @@
 typedef double (*opt_function)(void*, double, void*);
 
 extern double rust_callback_f(opt_function, const gsl_vector*, size_t, double, double*, size_t);
-extern double rust_callback_dfs(const gsl_vector*, size_t, size_t, double, double*, size_t, opt_function*);
+extern double rust_callback_dfs(opt_function*, const gsl_vector*, size_t, size_t, double, double*, size_t);
 
 struct data {
   opt_function func_f;
@@ -59,7 +59,7 @@ call_dfs (const gsl_vector * x, void *data,
 
   for (size_t i = 0; i < n; i++) {
       for (size_t j = 0; j < params_len; j++) {
-          gsl_matrix_set (jacobian, i, j, rust_callback_dfs(x, params_len, j, t[i], args, args_len, func_dfs));
+          gsl_matrix_set (jacobian, i, j, rust_callback_dfs(func_dfs, x, params_len, j, t[i], args, args_len));
       }
   }
 
@@ -153,7 +153,7 @@ void run_gsl_multifit_nlinear_df(
     double chisq, chisq0;
     int status, info;
 
-    double* call_dfs_ptr = NULL;
+    int* call_dfs_ptr = NULL;
     if (func_dfs != NULL) {
         call_dfs_ptr = call_dfs;
     }
