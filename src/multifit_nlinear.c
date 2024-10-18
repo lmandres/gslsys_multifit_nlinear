@@ -50,7 +50,6 @@ call_dfs (const gsl_vector * x, void *data,
 {
   size_t params_len = ((struct data *)data)->params_len;
   double *t = ((struct data *)data)->ts;
-  double *y = ((struct data *)data)->ys;
   size_t n = ((struct data *)data)->vars_len;
 
   double *args = ((struct data *)data)->args;
@@ -86,34 +85,6 @@ callback(const size_t iter, void *params,
           1.0 / rcond
   );
 }
-
-void run_gsl_multifit_nlinear(
-    opt_function func_f,
-    double* params,
-    double* covars,
-    size_t params_len,
-    double* ts,
-    double* ys,
-    size_t vars_len,
-    double* args,
-    size_t args_len,
-    size_t max_iters
-) {
-    run_gsl_multifit_nlinear_df(
-        func_f,
-        NULL,
-        params,
-        covars,
-        params_len,
-        ts,
-        ys,
-        vars_len,
-        args,
-        args_len,
-        max_iters
-    );
-}
-
 
 void run_gsl_multifit_nlinear_df(
     opt_function func_f,
@@ -153,9 +124,9 @@ void run_gsl_multifit_nlinear_df(
     double chisq, chisq0;
     int status, info;
 
-    int* call_dfs_ptr = NULL;
+    void* call_dfs_ptr = NULL;
     if (func_dfs != NULL) {
-        call_dfs_ptr = call_dfs;
+        call_dfs_ptr = &call_dfs;
     }
 
     const double xtol = 1e-8;
@@ -197,3 +168,31 @@ void run_gsl_multifit_nlinear_df(
     gsl_multifit_nlinear_free (w);
     gsl_matrix_free (covar);
 }
+
+void run_gsl_multifit_nlinear(
+    opt_function func_f,
+    double* params,
+    double* covars,
+    size_t params_len,
+    double* ts,
+    double* ys,
+    size_t vars_len,
+    double* args,
+    size_t args_len,
+    size_t max_iters
+) {
+    run_gsl_multifit_nlinear_df(
+        func_f,
+        NULL,
+        params,
+        covars,
+        params_len,
+        ts,
+        ys,
+        vars_len,
+        args,
+        args_len,
+        max_iters
+    );
+}
+
